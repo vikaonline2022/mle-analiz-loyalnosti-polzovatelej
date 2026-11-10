@@ -57,13 +57,66 @@ def main():
         f"{processor.user_profile['orders_count'].mean():.2f}"
     )
 
+   
     print('\nОсновные результаты:')
-    print('- Доля повторных покупателей составляет около 61%.')
-    print('- Наиболее высокая доля возврата наблюдается у покупателей,')
-    print('  начавших с выставок и театральных мероприятий.')
-    print('- В активных регионах доля повторных покупателей выше.')
-    print('- Медианная выручка повторных покупателей выше,')
-    print('  чем покупателей с одним заказом.')
+
+    # Доля повторных покупателей
+    print(
+        f'- Доля повторных покупателей составила '
+        f'{repeat_share:.2f}%.'
+    )
+
+    # Мероприятие с максимальной долей повторных покупок
+    event_stats = processor.retention_results['first_event_type']
+
+    best_event = event_stats.loc[
+        event_stats['return_share'].idxmax()
+    ]
+
+    print(
+        f"- Наибольшая доля повторных покупок наблюдается "
+        f"среди пользователей, начавших с категории "
+        f"«{best_event['first_event_type']}»: "
+        f"{best_event['return_share']:.2f}%."
+    )
+
+    # Сравнение активных и менее активных регионов
+    region_stats = (
+        processor.hypothesis_results['regions']
+        .set_index('region_group')['return_share']
+    )
+
+    active_share = region_stats['Активные регионы']
+    less_active_share = region_stats['Менее активные регионы']
+    region_difference = active_share - less_active_share
+
+    print(
+        f'- Доля повторных покупателей в активных регионах: '
+        f'{active_share:.2f}%, в менее активных: '
+        f'{less_active_share:.2f}%. Разница: '
+        f'{region_difference:.2f} п.п.'
+    )
+
+    # Сравнение медианной выручки
+    revenue_stats = processor.revenue_results
+
+    one_order_median = revenue_stats.loc[
+        'Один заказ', 'median_revenue'
+    ]
+
+    repeat_median = revenue_stats.loc[
+        'Повторные заказы', 'median_revenue'
+    ]
+
+    median_difference = repeat_median - one_order_median
+
+    print(
+        f'- Медианная выручка повторных покупателей: '
+        f'{repeat_median:.2f} руб., покупателей с одним заказом: '
+        f'{one_order_median:.2f} руб. Разница: '
+        f'{median_difference:.2f} руб.'
+    )
+
 
     print('=' * 60)
 
